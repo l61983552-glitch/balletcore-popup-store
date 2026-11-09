@@ -62,71 +62,108 @@ const area=new THREE.PointLight('#f0c1d5',72,25,2);area.position.set(-3,4,3);sce
 const blueLight=new THREE.PointLight('#d6d8ff',58,21,2);blueLight.position.set(5,4,-1);scene.add(blueLight);
 const ground=mesh(new THREE.PlaneGeometry(150,150),m('#eae0e2',0,.95));ground.rotation.x=-Math.PI/2;ground.position.y=-.22;ground.castShadow=false;
 
-// Light wood planks close to the original Homestyler space reference.
-function parquetTexture(){
- const c=document.createElement('canvas');c.width=1024;c.height=1024;
- const g=c.getContext('2d');const shades=['#dec8b3','#d5b99f','#e1cdb7','#cfb59d','#e8d4be'];
- const plank=90;
- for(let row=0;row<12;row++){
-  const y=row*plank-3, offset=(row%2)*136;
-  for(let x=-260+offset;x<1250;x+=272){
-   g.fillStyle=shades[(row*3+Math.floor((x+260)/272)*2+15)%shades.length];g.fillRect(x,y,271,plank-1);
-   g.strokeStyle='rgba(117,80,54,.20)';g.lineWidth=1.1;g.strokeRect(x,y,271,plank-1);
-   for(let k=0;k<7;k++){
-     const oy=y+12+k*11;
-     g.strokeStyle='rgba(122,85,63,.075)';g.beginPath();g.moveTo(x+8,oy);g.bezierCurveTo(x+92,oy-4,x+170,oy+3,x+262,oy);g.stroke();
-   }
-  }
- }
- const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),8);return t;
+// ============================================================================
+// BACKGROUND V4 — architectural materials sampled from the designer's REAL
+// empty Homestyler room. Background-only update: all campaign art is untouched.
+// Reference images: front façade + inside view + top/ornamental ceiling view.
+// The 3 photos are NOT a stitched panoramic image; the space itself is real 3D.
+// ============================================================================
+const architectureLoader = new THREE.TextureLoader();
+function architectureTexture(name,rx=1,ry=1){
+  const texture=architectureLoader.load('./assets/'+name,undefined,undefined,e=>console.warn('Missing architecture texture:',name,e));
+  texture.colorSpace=THREE.SRGBColorSpace;
+  texture.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),8);
+  texture.wrapS=THREE.RepeatWrapping;
+  texture.wrapT=THREE.RepeatWrapping;
+  texture.repeat.set(rx,ry);
+  return texture;
 }
-box(14.6,.26,10.8,0,-.03,0,m('#d9bbab',0,.9));
-const floor=mesh(new THREE.PlaneGeometry(14.35,10.55),new THREE.MeshStandardMaterial({map:parquetTexture(),roughness:.78}));floor.rotation.x=-Math.PI/2;floor.position.y=.105;floor.castShadow=false;
-for(const y of [.09,.2]){
-  box(14.8,.035,.11,0,y,5.43,mat.gold);box(14.8,.035,.11,0,y,-5.43,mat.gold);
-  box(.11,.035,10.9,-7.37,y,0,mat.gold);box(.11,.035,10.9,7.37,y,0,mat.gold);
+const wallPlaster=architectureTexture('background-plaster.jpg',3.6,1.8);
+const woodGrain=architectureTexture('background-floor.jpg',1.35,4.7);
+const ceilingRelief=architectureTexture('background-ceiling.jpg');
+const plasterMat=new THREE.MeshStandardMaterial({map:wallPlaster,color:'#f7f2ed',roughness:.95,side:THREE.DoubleSide});
+const timberMat=new THREE.MeshStandardMaterial({map:woodGrain,color:'#fdf9f3',roughness:.61,metalness:0});
+const plasterTrim=m('#f5f3f2',0,.78);
+const columnMat=m('#fbf9f7',0,.66);
+const railMat=m('#cfc9c3',0,.83);
+
+// Floor: same pale natural wood as the empty reference room. No pink/gold outline.
+box(14.6,.18,10.85,0,-.025,0,m('#b6a494',0,.95));
+const floor=mesh(new THREE.PlaneGeometry(14.4,10.6),timberMat);
+floor.rotation.x=-Math.PI/2;floor.position.y=.075;floor.castShadow=false;
+
+// Same open-front gallery geometry as the original Homestyler shell.
+// The walls are solid plaster surfaces, not duplicated perspective photographs.
+box(14.5,5.40,.28,0,2.79,-5.28,plasterMat);
+for (const x of [-7.17,7.17]) {
+  box(.26,5.40,10.65,x,2.79,-.01,plasterMat);
+  // Thin taupe skirting is present on the reference room.
+  box(.09,.17,10.48,x>0?x-.15:x+.15,.23,-.01,railMat);
+}
+box(14.32,.19,.10,0,.24,-5.045,railMat);
+
+// Background ornamental ceiling, mapped with the actual supplied ceiling photo.
+// The decorative panel runs across the entire gallery when walking inside.
+const ceiling=mesh(new THREE.PlaneGeometry(14.35,10.52),new THREE.MeshStandardMaterial({map:ceilingRelief,color:'#fffefc',roughness:.93,side:THREE.DoubleSide}));
+ceiling.rotation.x=Math.PI/2;ceiling.position.y=5.43;ceiling.castShadow=false;ceiling.receiveShadow=false;
+const ceilingOrnaments=[];
+function ceilingDetail(meshObj){ meshObj.castShadow=false;meshObj.receiveShadow=false;ceilingOrnaments.push(meshObj);return meshObj; }
+// Crisp white plaster rails and crown cornice frame the real ceiling relief.
+for(const x of [-7.025,7.025]){
+  ceilingDetail(box(.22,.20,10.4,x,5.29,0,plasterTrim));
+  ceilingDetail(box(.10,.08,10.4,x>0?x-.25:x+.25,5.17,0,plasterTrim));
+}
+for(const z of [-5.035,5.04]){
+  ceilingDetail(box(14.0,.18,.22,0,5.30,z,plasterTrim));
+  ceilingDetail(box(13.98,.08,.08,0,5.17,z>0?z-.21:z+.21,plasterTrim));
 }
 
-// Rear backdrop and partially open sides
-box(14.4,5.4,.34,0,2.74,-5.3,mat.pale);
-box(14.5,.2,.54,0,5.52,-5.25,mat.ivory);
-box(14.5,.11,.55,0,5.33,-5.25,mat.ivory);
-for(let x=-6.7;x<=6.7;x+=2.23){box(.11,5.1,.09,x,2.7,-5.04,mat.ivory);box(.045,4.85,.13,x+.14,2.7,-5.01,mat.gold);}
-box(.24,4.6,6.6,-7.15,2.38,-2.07,mat.pale);
-box(.24,4.6,6.6,7.15,2.38,-2.07,mat.pale);
-for(const x of [-7.2,7.2]){
-  box(.42,5.45,.44,x,2.77,5.05,mat.ivory);
-  cylinder(.34,.37,.24,x,5.53,5.05,mat.gold);
-  box(.18,4.7,.18,x>0?x-.19:x+.19,2.6,-.2,mat.gold);
+// Raised plaster moldings around the back wall and side wall perimeter.
+box(14.25,.16,.12,0,5.13,-5.02,plasterTrim);
+box(14.26,.05,.13,0,4.99,-5.01,plasterTrim);
+for(const x of [-7.015,7.015]){
+  box(.14,.17,10.30,x,5.13,0,plasterTrim);
+  box(.06,.065,10.30,x>0?x-.12:x+.12,4.98,0,plasterTrim);
 }
-// Accent wall frames
-for(const x of [-5.35,-2.7,0,2.7,5.35]){
- box(1.64,.06,.07,x,1.05,-5.08,mat.gold);box(1.64,.06,.07,x,4.63,-5.08,mat.gold);
- box(.055,3.58,.07,x-.82,2.83,-5.08,mat.gold);box(.055,3.58,.07,x+.82,2.83,-5.08,mat.gold);
-}
-// Classical columns and ceiling relief inspired by the supplied Homestyler renders.
-for(const z of [-3.9,3.25])for(const x of [-6.78,6.78]){
- cylinder(.225,.25,4.5,x,2.45,z,mat.ivory,scene,32);
- cylinder(.39,.37,.25,x,.28,z,mat.ivory);
- cylinder(.33,.31,.28,x,4.88,z,mat.ivory);
- box(.84,.15,.84,x,5.09,z,mat.ivory);
- for(const t of [0,Math.PI/2,Math.PI,3*Math.PI/2]){
-  const px=x+Math.cos(t)*.33,pz=z+Math.sin(t)*.33;
-  ball(.115,px,4.86,pz,mat.ivory);
+
+// Pale white Corinthian columns placed to match the empty store photograph.
+// Capitals have ornamental leaf detailing. Positions avoid the exhibition cutouts.
+const ivoryCapital=m('#eeebe8',0,.8);
+function corinthianColumn(x,z){
+ const group=new THREE.Group();group.position.set(x,0,z);scene.add(group);
+ const col=(r0,r1,h,y,material=columnMat,segments=36)=>cylinder(r0,r1,h,0,y,0,material,group,segments);
+ const base=box(.82,.16,.82,0,.19,0,columnMat,group);
+ col(.335,.37,.13,.35);col(.287,.308,.12,.47);
+ col(.253,.29,4.21,2.64);
+ col(.30,.30,.14,4.79);
+ col(.37,.30,.26,4.98,ivoryCapital);
+ col(.43,.40,.12,5.12,columnMat);
+ box(.84,.13,.84,0,5.22,0,columnMat,group);
+ // Fine classical fluting, kept subtle so it doesn't distract from the artworks.
+ for(let k=0;k<16;k++){
+  const angle=k*Math.PI*2/16;
+  const rr=.253;
+  line([Math.cos(angle)*rr,.56,Math.sin(angle)*rr],[Math.cos(angle)*rr,4.66,Math.sin(angle)*rr],.0105,m('#f0eded',0,.84),group);
  }
+ // Acanthus-style leaves and scrolls along the capital.
+ for(let k=0;k<12;k++){
+  const angle=k*Math.PI*2/12;
+  const leaf=mesh(new THREE.ConeGeometry(.103,.36,5),ivoryCapital,group);
+  leaf.position.set(Math.cos(angle)*.30,4.87,Math.sin(angle)*.30);
+  leaf.rotation.z=-Math.cos(angle)*.22;leaf.rotation.x=Math.sin(angle)*.22;
+ }
+ for(let k=0;k<4;k++){
+  const angle=Math.PI/4+k*Math.PI/2;
+  const spir=ring(.115,.029,Math.cos(angle)*.31,5.04,Math.sin(angle)*.31,columnMat,group);
+  spir.rotation.y=angle;
+ }
+ return group;
 }
-// Coiffured ceiling: fine white frames & circular medallions.
-const ceiling=mesh(new THREE.PlaneGeometry(14.35,10.55),m('#f9f7f4',0,.9,{side:THREE.DoubleSide}));
-ceiling.rotation.x=Math.PI/2;ceiling.position.y=5.44;ceiling.castShadow=false;
-const ceilingOrnaments=[];
-for(const x of [-4.8,0,4.8])for(const z of [-2.85,2.1]){
- const panel=mesh(new THREE.TorusGeometry(1.48,.064,8,68),mat.ivory);
- panel.rotation.x=Math.PI/2;panel.position.set(x,5.37,z);panel.castShadow=false;ceilingOrnaments.push(panel);
- const inner=mesh(new THREE.TorusGeometry(1.08,.024,8,68),mat.ivory);
- inner.rotation.x=Math.PI/2;inner.position.set(x,5.36,z);inner.castShadow=false;ceilingOrnaments.push(inner);
-}
-for(const x of [-7.07,7.07])box(.12,.12,10.3,x,5.30,0,mat.ivory);
-for(const z of [-5.02,5.04])box(14.0,.12,.14,0,5.30,z,mat.ivory);
+// Four corner features plus three far-wall columns, inspired by the frontal shot.
+for(const x of [-6.65,6.65])corinthianColumn(x,4.9);
+for(const x of [-5.3,0,5.3])corinthianColumn(x,-4.86);
+
+// Ballet-studio side rails remain in the original campaign scene (below).
 
 // Text signs from canvas texture (no font/image downloads needed for 3D signage)
 function textSurface(lines,{width=1024,height=320,bg=null,textColor='#564450',subColor='#a37b90',border=false}={}){
