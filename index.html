@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f8f2f4" />
+  <meta name="description" content="Explore a 360° interactive balletcore pop-up store concept for SHUSHU/TONG × Shining Nikki." />
+  <title>SHUSHU/TONG × SHINING NIKKI — Pop-up Atelier</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div id="scene" role="img" aria-label="Interactive 3D balletcore pop-up store with an original white ballerina art installation, custom photobooth, pink curtain and two fashion display wings with actual user reference art"></div>
+    <div class="grain"></div>
+
+    <header class="topbar">
+      <div class="monogram" aria-hidden="true">S<span>✳</span>N</div>
+      <div class="identity"><strong>SHUSHU/TONG <em>×</em> SHINING NIKKI</strong><span>360° POP-UP STORE · SS27</span></div>
+      <div class="edition"><span class="dot"></span> INTERACTIVE CONCEPT <span class="edition-count">01 / 01</span></div>
+    </header>
+
+    <aside class="editorial">
+      <div class="eyebrow"><span class="eyebrow-line"></span> ENTER THE ATELIER</div>
+      <h1>Every Face,<br /><i>Another</i><br />Identity.</h1>
+      <p>A dreamlike encounter between real-world fashion and virtual self-expression. Step into the world of balletcore.</p>
+      <div class="squiggle" aria-hidden="true">✳ &nbsp; ✧ &nbsp; ♡</div>
+    </aside>
+
+    <section class="modebar" aria-label="Viewing mode">
+      <div class="mode-title">EXPLORE THE SPACE <span>✦</span></div>
+      <div class="mode-buttons">
+        <button id="orbitMode" type="button" class="mode-button active" aria-pressed="true"><span class="button-icon">◌</span> 360° VIEW</button>
+        <button id="walkMode" type="button" class="mode-button" aria-pressed="false"><span class="button-icon">↗</span> WALK INSIDE</button>
+      </div>
+      <div class="mode-actions">
+        <button id="autoRotate" class="text-button" type="button" aria-pressed="false">↻ &nbsp; AUTO ROTATE</button>
+        <button id="resetView" class="text-button" type="button">⌂ &nbsp; RESET VIEW</button>
+      </div>
+    </section>
+
+    <section class="bottompanel" aria-label="Explore exhibits">
+      <div class="discover-label">DISCOVER THE EXPERIENCE <span class="small-star">✳</span></div>
+      <div class="destinations">
+        <button class="destination" data-destination="stage" type="button"><span class="dest-number">01</span><span class="dest-text">THE BALLERINA<small>CENTER INSTALLATION</small></span><span class="dest-arrow">↗</span></button>
+        <button class="destination" data-destination="left" type="button"><span class="dest-number">02</span><span class="dest-text">LEFT WING<small>BALLET COLLECTION</small></span><span class="dest-arrow">↗</span></button>
+        <button class="destination" data-destination="right" type="button"><span class="dest-number">03</span><span class="dest-text">RIGHT WING<small>FASHION COLLECTION</small></span><span class="dest-arrow">↗</span></button>
+        <button class="destination" data-destination="booth" type="button"><span class="dest-number">04</span><span class="dest-text">PHOTO BOOTH<small>RIGHT-SIDE EXPERIENCE</small></span><span class="dest-arrow">↗</span></button>
+      </div>
+    </section>
+
+    <div class="toolstrip">
+      <label class="tool-upload" for="modelUpload" title="Import your own 3D character or outfit model">＋ &nbsp; ADD 3D MODEL<input id="modelUpload" type="file" accept=".glb,.fbx" hidden /></label>
+      <button id="screenshot" type="button">⌗ &nbsp; SAVE VIEW</button>
+    </div>
+    <div id="hint" class="hint">DRAG TO ROTATE &nbsp;·&nbsp; SCROLL TO ZOOM</div>
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+    <div id="loading" class="loading" aria-live="polite"><span>✳</span><p>OPENING THE ATELIER</p><div class="loadingline"></div></div>
+
+    <div class="walkpad" id="walkpad" aria-label="Walking controls">
+      <button data-move="forward" aria-label="Move forward">↑</button>
+      <div><button data-move="left" aria-label="Move left">←</button><button data-move="back" aria-label="Move backward">↓</button><button data-move="right" aria-label="Move right">→</button></div>
+    </div>
+
+    <footer><span>THE WORLD IS YOUR RUNWAY.</span><span>A CONCEPTUAL FASHION EXPERIENCE &nbsp; © 2026</span></footer>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
