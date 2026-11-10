@@ -6,8 +6,8 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 // Concept store: every architectural element is built in code.
 // Replace the stylized display outfits with your own .glb or .fbx character using ADD 3D MODEL.
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#f2ede9');
-scene.fog = new THREE.Fog('#f2ede9', 28, 70);
+scene.background = new THREE.Color('#e6d3cc');
+scene.fog = new THREE.Fog('#e6d3cc', 32, 70);
 
 const canvasHost = document.querySelector('#scene');
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.08, 140);
@@ -19,7 +19,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.65;
+renderer.toneMappingExposure = 1.12; // V5: prevent overexposed, pale architectural details
 canvasHost.appendChild(renderer.domElement);
 const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true;
@@ -56,17 +56,17 @@ function line(from,to,r,material,parent=scene){const a=new THREE.Vector3(...from
 function curveTube(points,r,material,parent=scene){return mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),48,r,8,false),material,parent);}
 
 // Studio lighting
-scene.add(new THREE.HemisphereLight(0xffffff,0xd4b9c7,2.4));
-const sun=new THREE.DirectionalLight('#fff6ed',3.35);sun.position.set(9,16,9);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-15;sun.shadow.camera.right=15;sun.shadow.camera.top=15;sun.shadow.camera.bottom=-15;sun.shadow.normalBias=.03;scene.add(sun);
-const area=new THREE.PointLight('#f0c1d5',72,25,2);area.position.set(-3,4,3);scene.add(area);
-const blueLight=new THREE.PointLight('#d6d8ff',58,21,2);blueLight.position.set(5,4,-1);scene.add(blueLight);
-const ground=mesh(new THREE.PlaneGeometry(150,150),m('#eae0e2',0,.95));ground.rotation.x=-Math.PI/2;ground.position.y=-.22;ground.castShadow=false;
+scene.add(new THREE.HemisphereLight(0xfff4ec,0xd5b9b5,1.55));
+const sun=new THREE.DirectionalLight('#ffebdf',2.0);sun.position.set(9,16,9);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-15;sun.shadow.camera.right=15;sun.shadow.camera.top=15;sun.shadow.camera.bottom=-15;sun.shadow.normalBias=.03;scene.add(sun);
+const area=new THREE.PointLight('#f6cdc6',24,25,2);area.position.set(-3,4,3);scene.add(area);
+const blueLight=new THREE.PointLight('#f1dfed',12,21,2);blueLight.position.set(5,4,-1);scene.add(blueLight);
+const ground=mesh(new THREE.PlaneGeometry(150,150),m('#e8dbd6',0,.95));ground.rotation.x=-Math.PI/2;ground.position.y=-.22;ground.castShadow=false;
 
 // ============================================================================
-// BACKGROUND V4 — architectural materials sampled from the designer's REAL
-// empty Homestyler room. Background-only update: all campaign art is untouched.
-// Reference images: front façade + inside view + top/ornamental ceiling view.
-// The 3 photos are NOT a stitched panoramic image; the space itself is real 3D.
+// BACKGROUND V5 — SOLID BLUSH-BEIGE architectural walls to match the provided
+// pink reference room (second image). NO wall-photo/plaster overlay or wallpaper.
+// Ceiling: real decorative photo. Floor: real wood photo. White columns remain 3D.
+// Sculptures, mannequins, dancers, curtain, photo booth and camera logic UNCHANGED.
 // ============================================================================
 const architectureLoader = new THREE.TextureLoader();
 function architectureTexture(name,rx=1,ry=1){
@@ -78,14 +78,14 @@ function architectureTexture(name,rx=1,ry=1){
   texture.repeat.set(rx,ry);
   return texture;
 }
-const wallPlaster=architectureTexture('background-plaster.jpg',3.6,1.8);
+// V5: walls intentionally use NO wallpaper/plaster image. Uniform blush-beige like reference #2.
 const woodGrain=architectureTexture('background-floor.jpg',1.35,4.7);
 const ceilingRelief=architectureTexture('background-ceiling.jpg');
-const plasterMat=new THREE.MeshStandardMaterial({map:wallPlaster,color:'#f7f2ed',roughness:.95,side:THREE.DoubleSide});
-const timberMat=new THREE.MeshStandardMaterial({map:woodGrain,color:'#fdf9f3',roughness:.61,metalness:0});
-const plasterTrim=m('#f5f3f2',0,.78);
-const columnMat=m('#fbf9f7',0,.66);
-const railMat=m('#cfc9c3',0,.83);
+const plasterMat=new THREE.MeshBasicMaterial({color:'#c9aaa3',side:THREE.DoubleSide,toneMapped:false}); // exact matte solid color, unaffected by lighting
+const timberMat=new THREE.MeshStandardMaterial({map:woodGrain,color:'#fff2eb',roughness:.48,metalness:0});
+const plasterTrim=m('#f6e8e3',0,.78);
+const columnMat=m('#fff8f5',0,.72);
+const railMat=m('#c7b2ac',0,.83);
 
 // Floor: same pale natural wood as the empty reference room. No pink/gold outline.
 box(14.6,.18,10.85,0,-.025,0,m('#b6a494',0,.95));
@@ -104,7 +104,7 @@ box(14.32,.19,.10,0,.24,-5.045,railMat);
 
 // Background ornamental ceiling, mapped with the actual supplied ceiling photo.
 // The decorative panel runs across the entire gallery when walking inside.
-const ceiling=mesh(new THREE.PlaneGeometry(14.35,10.52),new THREE.MeshStandardMaterial({map:ceilingRelief,color:'#fffefc',roughness:.93,side:THREE.DoubleSide}));
+const ceiling=mesh(new THREE.PlaneGeometry(14.35,10.52),new THREE.MeshStandardMaterial({map:ceilingRelief,color:'#f5e4df',roughness:.92,side:THREE.DoubleSide}));
 ceiling.rotation.x=Math.PI/2;ceiling.position.y=5.43;ceiling.castShadow=false;ceiling.receiveShadow=false;
 const ceilingOrnaments=[];
 function ceilingDetail(meshObj){ meshObj.castShadow=false;meshObj.receiveShadow=false;ceilingOrnaments.push(meshObj);return meshObj; }
@@ -128,7 +128,7 @@ for(const x of [-7.015,7.015]){
 
 // Pale white Corinthian columns placed to match the empty store photograph.
 // Capitals have ornamental leaf detailing. Positions avoid the exhibition cutouts.
-const ivoryCapital=m('#eeebe8',0,.8);
+const ivoryCapital=m('#f3e5e0',0,.8);
 function corinthianColumn(x,z){
  const group=new THREE.Group();group.position.set(x,0,z);scene.add(group);
  const col=(r0,r1,h,y,material=columnMat,segments=36)=>cylinder(r0,r1,h,0,y,0,material,group,segments);
